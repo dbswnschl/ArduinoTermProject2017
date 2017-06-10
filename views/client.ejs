@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+ 
+    <title>Arduino Page</title> 
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/sb-admin.css" rel="stylesheet">
+    <meta http-equiv="refresh" content="10"> 
+</head>
+<body>
+
+        <!-- Navigation -->
+        
+
+        <div id="page-wrapper">
+
+            <div class="container-fluid">
+
+                <!-- Page Heading -->
+                <div class="row">
+                    <div class="col-lg-12">
+                        <h1 class="page-header">
+                            센서정보값
+                        </h1>
+                        <ol class="breadcrumb">
+                            <li>
+                                <i class="fa fa-dashboard"></i> Arduino
+                            </li>
+                            <li class="active">
+                                <i class="fa fa-table"></i> 센서정보값
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+                <!-- /.row -->
+
+                <div class="row">
+                    <div class="col-lg-6">
+                        <h2>센서정보</h2>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>센서종류</th>
+                                        <th>센서 값</th>
+                                        <th>동작 정보</th>
+                                        <th>동기화 시간</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>빛감지센서</td>
+                                        <td><%= mylight.val%></td>
+                                        <td><% if(mylight.val < 100){%>불 켜짐<% }else{%>불 꺼짐<%}%></td>
+                                        <td><%= mylight.times %></td>
+                                    </tr>
+                                    <tr>
+                                        <td>온도감지센서</td>
+                                        <td><%= ((mytemp.val *500) / 1024).toFixed(2)%> C</td>
+                                        <td>섭씨 온도 표시</td>
+                                        <td><%= mytemp.times%></td>
+                                    </tr>
+                                    <tr>
+                                        <td>습도감지센서</td>
+                                        <td><%= myhumidity.val%></td>
+                                        <td>-</td>
+                                        <td><%= myhumidity.times%></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                </div>
+                <!-- /.row -->
+                <div class="row">
+                    <div class="col-lg-6">
+                        <h2>GPS 정보</h2>
+                        <div id="map" style="width:500px;height:400px;"></div>
+                        <p> 최근 업데이트 시각 : <%= gpstime%></p>
+                    </div>
+                </div>
+                <!-- /.row -->
+
+            </div>
+            <!-- /.container-fluid -->
+
+        </div>
+        <!-- /#page-wrapper -->
+    </div>
+
+
+      <script type="text/javascript" src="http://apis.daum.net/maps/maps3.js?apikey=979ac1e062c606ec359d305e9d2fb152">     </script>
+      <script>
+      
+        var container = document.getElementById('map'); //지도를 담을 영역의 DOM 레퍼런스
+        var options = { //지도를 생성할 때 필요한 기본 옵션
+	    center: new daum.maps.LatLng(<%= mygps.lat%>,<%= mygps.lng%>), //지도의 중심좌표.
+	    level: 3 //지도의 레벨(확대, 축소 정도)
+        };
+        var map = new daum.maps.Map(container, options); //지도 생성 및 객체 리턴
+        var mapTypeControl = new daum.maps.MapTypeControl();
+        map.addControl(mapTypeControl, daum.maps.ControlPosition.TOPRIGHT);
+        var zoomControl = new daum.maps.ZoomControl();
+        map.addControl(zoomControl, daum.maps.ControlPosition.RIGHT);
+        var markerPosition  = new daum.maps.LatLng(<%= mygps.lat%>,<%= mygps.lng%>); 
+
+        // 마커를 생성합니다
+        var marker = new daum.maps.Marker({
+            position: markerPosition
+        });
+
+        // 마커가 지도 위에 표시되도록 설정합니다
+        marker.setMap(map);
+        var iwContent = '<div style="padding:5px;">자전거 위치</div>', // 인포윈도우에 표출될 내용으로 HTML 문자열이나 document element가 가능합니다
+        iwPosition = new daum.maps.LatLng(<%= mygps.lat%>,<%= mygps.lng%>), //인포윈도우 표시 위치입니다
+        iwRemoveable = true; // removeable 속성을 ture 로 설정하면 인포윈도우를 닫을 수 있는 x버튼이 표시됩니다
+
+        // 인포윈도우를 생성하고 지도에 표시합니다
+        var infowindow = new daum.maps.InfoWindow({
+            map: map, // 인포윈도우가 표시될 지도
+            position : iwPosition, 
+            content : iwContent,
+            removable : iwRemoveable
+});
+        infowindow.open(map, marker); 
+
+      </script>
+
+
+
+</body>
+</html>
