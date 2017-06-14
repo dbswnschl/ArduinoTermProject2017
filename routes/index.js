@@ -73,7 +73,7 @@ app.post('/', function (req, res, next) {
                     } else {
 
                       console.log("gps_sensor값 전송 완료");
-                      
+
                     }
                   });
               }
@@ -87,36 +87,24 @@ app.post('/', function (req, res, next) {
   }
   res.send(result);
 });
-var apikey = "979ac1e062c606ec359d305e9d2fb152";
 app.get('/client', function (req, res) {
-
-
   connection.query(`SELECT * FROM gps_sensor ORDER BY id desc limit 1; `, function (err, row, field) {
-    if (err) {
-      printErr("SELECT GPS", err);
-    }
-    else {
-      connection.query(`SELECT * FROM light_sensor ORDER BY id desc limit 1;`, function (err1, row1, field1) {
-        connection.query(`SELECT * FROM temp_sensor ORDER BY id desc limit 1;`, function (err2, row2, field2) {
-          connection.query(`SELECT * FROM humidity_sensor ORDER BY id desc limit 1;`, function (err3, row3, field3) {
-            if (err1 || err2 || err3) {
-              console.log("ERROR");
-              res.send("ERROR");
-            } else {
-              temp = { val: row2[0].value, times: row2[0].times };
-              light = { val: row1[0].value, times: row1[0].times };
-              humidity = { val: row3[0].value, times: row3[0].times };
-              var mygps = { lat: row[0].lat, lng: row[0].lng };
-              res.render('client', { mygps: mygps, gpstime: row[0].times, mytemp: temp, mylight: light, myhumidity: humidity });
-            }
-          });
+    connection.query(`SELECT * FROM light_sensor ORDER BY id desc limit 1;`, function (err1, row1, field1) {
+      connection.query(`SELECT * FROM temp_sensor ORDER BY id desc limit 1;`, function (err2, row2, field2) {
+        connection.query(`SELECT * FROM humidity_sensor ORDER BY id desc limit 1;`, function (err3, row3, field3) {
+          if (err || err1 || err2 || err3) {
+            console.log("ERROR");
+            res.send("ERROR");
+          } else {
+            temp = { val: row2[0].value, times: row2[0].times };
+            light = { val: row1[0].value, times: row1[0].times };
+            humidity = { val: row3[0].value, times: row3[0].times };
+            var mygps = { lat: row[0].lat, lng: row[0].lng };
+            res.render('client', { mygps: mygps, gpstime: row[0].times, mytemp: temp, mylight: light, myhumidity: humidity });
+          }
         });
       });
-
-
-
-
-    }
+    });
   });
 });
 
