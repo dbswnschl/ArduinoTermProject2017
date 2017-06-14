@@ -15,6 +15,7 @@ int PIN_Humidity = A2;
 int PIN_Trig = 2;
 int PIN_Echo = 3;
 int buzzor=6;
+int led = 13;
 // Initialize the client library
 
 // Global Variables
@@ -32,6 +33,7 @@ void setup() {
   pinMode(PIN_Trig,OUTPUT);
   pinMode(PIN_Echo,INPUT);
   pinMode(buzzor,OUTPUT);
+  pinMode(led,OUTPUT);
   GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA); // RMC (recommended minimum) and GGA (fix data) including altitude
   GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);    // 1 Hz update rate - Adafruit does not suggest using anything higher than 1 Hz
   //GPS.sendCommand(PGCMD_ANTENNA);            // Request updates on antenna status, comment out to keep quiet
@@ -49,7 +51,7 @@ void loop()
 {
   while(true){
   long duration, cm;
-    
+  
   digitalWrite(PIN_Trig,HIGH);
   delayMicroseconds(10);
   digitalWrite(PIN_Trig,LOW);
@@ -64,7 +66,7 @@ void loop()
     Serial.print(ReportingInterval/1000);
     Serial.println(" 초");
     
-    //GetConnected();  // Uncomment if you plan to have the Edison disconnect between reports
+    
     if(GPS.latitude == 0 || GPS.longitude == 0){
     Serial.println("GPS값이 이상하여 다시 측정합니다..");
     Serial.print("GPS값을 제외한 결과를 ");
@@ -85,11 +87,10 @@ void loop()
     }
 
 
-    //client.stop();  // Uncomment if you plan to have the Edison disconnect between reports
   }
        char c = GPS.read();        // Receive output from the GPS one character at a time
   if (GPS.newNMEAreceived()) {  // if a sentence is received, we can check the checksum, parse it...
-       // Use this line for debugging to see raw feed
+    
     if (!GPS.parse(GPS.lastNMEA())){   // check to ensure we succeeded with parsing
       
         }                       // If we fail to parse a sentence we just wait for another
@@ -98,7 +99,6 @@ void loop()
 }
 
 
-// Here is where we send the information to Ubidots
 boolean SendtoServer(String value)
 {
   
@@ -110,6 +110,11 @@ WiFiClient client;
   String le = "";
   ParseLocation();              // Update the location value from the GPS feed
   var="{\"TEMP\":"+ (String)analogRead(PIN_TEMP)+",\"LIGHT\":"+(String)analogRead(PIN_LIGHT)+",\"HUMIDITY\":"+(String)analogRead(PIN_Humidity) + ", \"GPS\":"+ Location + "}";
+  if(analogRead(PIN_LIGHT) < 100){
+    digitalWrite(led,HIGH);
+  }else{
+    digitalWrite(led,LOW);
+  }
   int num=var.length();                                       // How long is the payload
   le=String(num);                                             //this is to calcule the length of var
   // Make a TCP connection to remote host
@@ -130,7 +135,6 @@ WiFiClient client;
   client.println();
   client.println(var);
   client.println();
-  // See if Ubidots acknowledges the creation of a new "dot" with a "201" code
   unsigned long commandClock = millis();                      // Start the timeout clock
   while(!complete && millis() <= commandClock + TimeOut)         // Need to give the modem time to complete command 
   {
@@ -146,7 +150,6 @@ WiFiClient client;
     for (int i=0; i < count; i++) {
       if (replybuffer[i] != '\n') Serial.write(replybuffer[i]);
     }
-                             // Uncomment if needed to debug
     
     return true;
   }
@@ -178,7 +181,7 @@ boolean ParseLocation()
   if(Lat!= 0 && Lon!=0)
   Serial.println(Location);
 }
-void Buzz(int cm){  // 인수를 입력받아 부저음에 간격을 주어 출력
+void Buzz(int cm){  
   if(cm <= 5){
 digitalWrite(buzzor,HIGH);
     return;
